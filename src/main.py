@@ -7,18 +7,12 @@ from storage import Storage
 from views import *
 
 
-def start_redis(redis=None):
-    async def _start_redis(app):
-        nonlocal redis
+async def start_redis(app):
+    redis = await aioredis.create_redis_pool(REDIS_DSN)
 
-        if not redis:
-            redis = await aioredis.create_redis_pool(REDIS_DSN)
-
-        app['redis'] = redis
-        app['storage'] = Storage(STORAGE_NAME, redis=redis)
-        app['converter'] = Converter(storage=app['storage'])
-
-    return _start_redis
+    app['redis'] = redis
+    app['storage'] = Storage(STORAGE_NAME, redis=redis)
+    app['converter'] = Converter(storage=app['storage'])
 
 
 async def stop_redis(app):
@@ -26,9 +20,9 @@ async def stop_redis(app):
     await app['redis'].wait_closed()
 
 
-def create_app(redis=None):
+def create_app():
     app = web.Application()
-    app.on_startup.append(start_redis(redis))
+    app.on_startup.append(start_redis)
     app.on_shutdown.append(stop_redis)
 
     app.add_routes([

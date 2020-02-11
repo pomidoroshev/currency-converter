@@ -1,10 +1,16 @@
 from unittest import mock
 
-import aioredis
 import pytest
 
-from config import REDIS_DSN, STORAGE_NAME
 from main import create_app
+
+
+@pytest.fixture
+def initial_rates():
+    return [
+        {'currency': 'USD', 'rate': 63.379},
+        {'currency': 'EUR', 'rate': 69.182},
+    ]
 
 
 @pytest.fixture
@@ -13,12 +19,8 @@ def cli(loop, aiohttp_client):
     return loop.run_until_complete(aiohttp_client(app))
 
 
-@pytest.fixture
-async def redis():
-    return await aioredis.create_redis_pool(REDIS_DSN)
-
-
 @pytest.fixture(autouse=True)
-async def detele_storage(redis):
+def prepare_rates(cli, loop, initial_rates):
+    loop.run_until_complete(cli.post('/database', json=initial_rates))
     yield
-    await redis.delete(STORAGE_NAME)
+    loop.run_until_complete(cli.post('/database', json=[]))

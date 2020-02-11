@@ -1,6 +1,7 @@
 from aiohttp import web
 import ujson
 
+from errors import UnknownCurrencyError
 from money import Money
 from schemas import *
 
@@ -13,17 +14,21 @@ DEFAULT_CURRENCY = 'RUR'
 async def convert(request):
     try:
         params = ConvertRequestSchema().load(request.query)
+        result = await request.app['converter'].convert(
+            Money(params['amount'], params['from']), params['to']
+        )
     except ValidationError as e:
-        return json_response(e.messages, status=400)
-
-    result = await request.app['converter'].convert(
-        Money(params['amount'], params['from']), params['to']
-    )
+        return json_response({'error': e.messages}, status=400)
+    except UnknownCurrencyError as e:
+        return json_response({'error': str(e)}, status=404)
 
     return json_response(result.to_json())
 
 
 async def database(request):
+    rates = await request.json()
+    merge = bool(int(request.query.get('merge', 0)))
+    await request.app['converter'].update(rates, merge)
     return web.Response()
 
 

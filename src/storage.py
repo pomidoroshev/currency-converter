@@ -11,6 +11,8 @@ class Storage:
 
     async def get(self, key) -> str:
         res = await self.redis.hget(self.name, key)
+        if not res:
+            return ''
         return res.decode()
 
     async def clear(self):
