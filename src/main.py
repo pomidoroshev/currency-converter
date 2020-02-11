@@ -2,6 +2,7 @@ from aiohttp import web
 import aioredis
 
 from config import REDIS_DSN, STORAGE_NAME
+from converter import Converter
 from storage import Storage
 from views import *
 
@@ -15,6 +16,7 @@ def start_redis(redis=None):
 
         app['redis'] = redis
         app['storage'] = Storage(STORAGE_NAME, redis=redis)
+        app['converter'] = Converter(storage=app['storage'])
 
     return _start_redis
 

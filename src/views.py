@@ -7,13 +7,20 @@ from schemas import *
 __all__ = ('convert', 'database')
 
 
+DEFAULT_CURRENCY = 'RUR'
+
+
 async def convert(request):
     try:
         params = ConvertRequestSchema().load(request.query)
     except ValidationError as e:
         return json_response(e.messages, status=400)
 
-    return json_response(Money(0.66, 'USD').to_json())
+    result = await request.app['converter'].convert(
+        Money(params['amount'], params['from']), params['to']
+    )
+
+    return json_response(result.to_json())
 
 
 async def database(request):

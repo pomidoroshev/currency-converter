@@ -1,7 +1,6 @@
 from unittest import mock
 
-# import aioredis
-# import mockaioredis
+import aioredis
 import pytest
 
 from config import REDIS_DSN, STORAGE_NAME
@@ -19,13 +18,7 @@ async def redis():
     return await aioredis.create_redis_pool(REDIS_DSN)
 
 
-@pytest.fixture
+@pytest.fixture(autouse=True)
 async def detele_storage(redis):
     yield
     await redis.delete(STORAGE_NAME)
-
-
-# @pytest.fixture(autouse=True)
-# def redis():
-#     with mock.patch.object(aioredis, 'create_redis_pool', new=mockaioredis.create_redis_pool) as m:
-#         yield m
