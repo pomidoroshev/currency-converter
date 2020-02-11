@@ -7,9 +7,7 @@ from schemas import *
 
 __all__ = ('convert', 'database')
 
-
 DEFAULT_CURRENCY = 'RUR'
-
 
 async def convert(request):
     try:
@@ -27,10 +25,11 @@ async def convert(request):
 
 async def database(request):
     try:
-        rates = RateSchema(many=True).load(await request.json())
+        data = RateSchema(many=True).load(await request.json())
     except ValidationError as e:
         return json_response({'error': e.messages}, status=400)
 
+    rates = {x['currency']: str(x['rate']) for x in data}
     merge = bool(int(request.query.get('merge', 0)))
     await request.app['converter'].update(rates, merge)
     return web.Response()

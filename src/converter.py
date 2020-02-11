@@ -1,5 +1,4 @@
 from decimal import Decimal
-from typing import Dict, List
 
 from errors import UnknownCurrencyError
 from money import Money
@@ -34,9 +33,8 @@ class Converter:
         amount = money.amount * Decimal(current_rate) / Decimal(to_rate)
         return Money(amount, to_currency)
 
-    async def update(self, entries: List[Dict], merge: bool):
-        if not merge:
-            await self.storage.clear()
-
-        for entry in entries:
-            await self.storage.set(entry['currency'], str(entry['rate']))
+    async def update(self, rates: dict, merge: bool):
+        if merge:
+            await self.storage.update(rates)
+        else:
+            await self.storage.rewrite(rates)

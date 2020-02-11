@@ -17,3 +17,14 @@ class Storage:
 
     async def clear(self):
         return await self.redis.delete(self.name)
+
+    async def rewrite(self, data):
+        tr = self.redis.multi_exec()
+        tr.delete(self.name)
+        if data:
+            tr.hmset_dict(self.name, data)
+        await tr.execute()
+
+    async def update(self, data):
+        if data:
+            await self.redis.hmset_dict(self.name, data)
