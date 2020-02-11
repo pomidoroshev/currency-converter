@@ -26,7 +26,11 @@ async def convert(request):
 
 
 async def database(request):
-    rates = await request.json()
+    try:
+        rates = RateSchema(many=True).load(await request.json())
+    except ValidationError as e:
+        return json_response({'error': e.messages}, status=400)
+
     merge = bool(int(request.query.get('merge', 0)))
     await request.app['converter'].update(rates, merge)
     return web.Response()

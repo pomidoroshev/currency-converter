@@ -1,3 +1,6 @@
+import pytest
+
+
 async def test_database_update(cli):
     resp = await cli.post('/database', json=[
         {'currency': 'EUR', 'rate': 69.182},
@@ -24,3 +27,12 @@ async def test_database_merge(cli):
         'amount': 1
     })
     assert resp.status == 200
+
+
+@pytest.mark.parametrize('rates', [
+    [{'foo': 'bar'}],
+    [{'currency': 123, 'rate': 'RUR'}],
+])
+async def test_database_bad_request(cli, rates):
+    resp = await cli.post('/database', json=rates)
+    assert resp.status == 400
