@@ -3,14 +3,7 @@ import aioredis
 
 from config import REDIS_DSN, STORAGE_NAME
 from storage import Storage
-
-
-async def convert(request):
-    return web.Response()
-
-
-async def database(request):
-    return web.Response()
+from views import *
 
 
 async def start_redis(app):
