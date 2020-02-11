@@ -9,7 +9,7 @@ async def database(request):
     return web.Response()
 
 
-async def create_app():
+def create_app():
     app = web.Application()
 
     app.add_routes([

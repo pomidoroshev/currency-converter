@@ -3,7 +3,7 @@ name: Docker Image CI
 on: [push]
 
 jobs:
-  build_rest_api:
+  build:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
@@ -12,7 +12,7 @@ jobs:
         python-version: '3.6'
 
     - run: pip install -r requirements.txt -r requirements-test.txt
-    - run: PYTHONPATH=. pytest
+    - run: PYTHONPATH=src pytest
     - name: "Build and publish Docker image"
       uses: elgohr/Publish-Docker-Github-Action@2.12
       with:
