@@ -1,5 +1,6 @@
 from aiohttp import web
 import aioredis
+import uvloop
 
 from config import REDIS_DSN, STORAGE_NAME
 from converter import Converter
@@ -34,5 +35,6 @@ def create_app():
 
 
 if __name__ == '__main__':
+    uvloop.install()
     app = create_app()
     web.run_app(app)
