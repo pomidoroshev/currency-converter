@@ -1,4 +1,4 @@
-name: Docker Image CI
+name: CI
 
 on: [push]
 
@@ -14,10 +14,3 @@ jobs:
       uses: shogo82148/actions-setup-redis@v1
     - run: pip install -r requirements.txt -r requirements-test.txt
     - run: PYTHONPATH=src pytest
-    - name: "Build and publish Docker image"
-      uses: elgohr/Publish-Docker-Github-Action@2.12
-      with:
-        name: "${{ github.repository }}/currency_converter"
-        username: "${{ secrets.DOCKER_REGISTRY_LOGIN }}"
-        password: "${{ secrets.DOCKER_REGISTRY_PASSWORD }}"
-        registry: docker.pkg.github.com
