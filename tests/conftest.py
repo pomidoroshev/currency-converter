@@ -1,7 +1,9 @@
 from unittest import mock
 
+import redis
 import pytest
 
+from config import REDIS_DSN, STORAGE_NAME
 from main import create_app
 
 
@@ -19,8 +21,16 @@ def cli(loop, aiohttp_client):
     return loop.run_until_complete(aiohttp_client(app))
 
 
+@pytest.fixture()
+def redis_cli():
+    conn = redis.from_url(REDIS_DSN)
+    yield conn
+    conn.close()
+
+
 @pytest.fixture(autouse=True)
-def prepare_rates(cli, loop, initial_rates):
-    loop.run_until_complete(cli.post('/database', json=initial_rates))
-    yield
-    loop.run_until_complete(cli.post('/database', json=[]))
+def prepare_rates(redis_cli, initial_rates):
+    redis_cli.delete(STORAGE_NAME)
+    for rate in initial_rates:
+        redis_cli.hset(STORAGE_NAME, rate['currency'], rate['rate'])
+

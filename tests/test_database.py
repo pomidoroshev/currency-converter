@@ -1,36 +1,29 @@
+from config import STORAGE_NAME
+
 import pytest
 
 
-@pytest.mark.parametrize('data', [
-    [{'currency': 'EUR', 'rate': 69.182}],
-    [],
-])
-async def test_database_rewrite(cli, data):
-    resp = await cli.post('/database', json=data)
+async def test_database_rewrite(cli, redis_cli):
+    resp = await cli.post('/database', json=[{'currency': 'EUR', 'rate': 78}])
     assert resp.status == 200
-
-    resp = await cli.get('/convert', params={
-        'from': 'EUR',
-        'to': 'USD',
-        'amount': 1
-    })
-    assert resp.status == 404
+    assert not redis_cli.hget(STORAGE_NAME, 'USD')
+    assert redis_cli.hget(STORAGE_NAME, 'EUR') == b'78'
 
 
-@pytest.mark.parametrize('data', [
-    [{'currency': 'EUR', 'rate': 69.182}],
-    [],
-])
-async def test_database_merge(cli, data):
-    resp = await cli.post('/database', params={'merge': 1}, json=data)
+async def test_database_clear(cli, redis_cli):
+    resp = await cli.post('/database', json=[])
     assert resp.status == 200
+    assert not redis_cli.hget(STORAGE_NAME, 'USD')
+    assert not redis_cli.hget(STORAGE_NAME, 'EUR')
 
-    resp = await cli.get('/convert', params={
-        'from': 'EUR',
-        'to': 'USD',
-        'amount': 1
-    })
+
+async def test_database_merge(cli, redis_cli):
+    resp = await cli.post(
+        '/database', params={'merge': 1}, json=[{'currency': 'EUR', 'rate': 78}]
+    )
     assert resp.status == 200
+    assert redis_cli.hget(STORAGE_NAME, 'EUR') == b'78'
+    assert redis_cli.hget(STORAGE_NAME, 'USD')
 
 
 @pytest.mark.parametrize('rates', [
